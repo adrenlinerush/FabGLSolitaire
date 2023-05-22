@@ -5,7 +5,7 @@ extern fabgl::Canvas canvas;
 
 #define STACK_INPLAY 0
 #define STACK_COMPLETE 1
-#define Y_OFFSET 20
+#define Y_OFFSET 15
 
 class Stack 
 {

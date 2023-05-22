@@ -4,23 +4,22 @@
 #include "stack.cpp"
 
 #define DECK_X       25
-#define DECK_Y       25
+#define DECK_Y       5
 #define TURN_OFFSET  25
 #define TURN_X       75
-#define TURN_Y       25
-#define STACK_OFFSET 59
+#define TURN_Y       5
+#define STACK_OFFSET 58
 #define STACK_X      25
-#define STACK_Y      105
+#define STACK_Y      60
 #define COMPLETE_X   200
-#define COMPLETE_Y   25
+#define COMPLETE_Y   5
 
 class Deck {
   public:
     Deck();
     bool deck_turn(int cards);
     bool init();
-    Card pop();
-    Card next();
+    void check_click(int x,int y);
   private:
     std::vector<Card> deck{};
     std::vector<Card> turn{};
@@ -33,7 +32,14 @@ class Deck {
     bool redraw_turn();
     bool reset_deck();
     bool reset_turn();
+    Card pop();
+    Card next();
 };
+
+void Deck::check_click(int x,int y)
+{
+  this->deck_turn(3);
+}
 
 Deck::Deck()
 {

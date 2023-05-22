@@ -18,8 +18,8 @@ extern fabgl::Canvas canvas;
 #define COLOR_WHITE        RGB888(0xff, 0xff, 0xff)
 #define COLOR_BACKGROUND   RGB888(0x00, 0x00, 0x00) //BLACK
 
-#define CARD_HEIGHT        75
-#define CARD_WIDTH         45 
+#define CARD_HEIGHT        45
+#define CARD_WIDTH         30
 
 class Card {
   public:
@@ -96,6 +96,7 @@ bool Card::draw() {
 }
 
 bool Card::setColors() {
+  canvas.selectFont(&fabgl::FONT_4x6);
   if (c_visible) 
   {
     if (c_suit == SPADE or c_suit == CLUB)

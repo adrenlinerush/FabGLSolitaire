@@ -104,7 +104,7 @@ Stack * Deck::check_stack_click(int x, int y)
     }
     Serial.println("looping through stack");
     Serial.println(s);
-    for (int c = 0; c < stack->stack.size(); ++c)
+    for (int c = (stack->stack.size() -1); c >= 0; --c)
     {
       Serial.println("*** Card ***");
       Card * card = &stack->stack[c];
@@ -151,6 +151,25 @@ Stack * Deck::check_stack_click(int x, int y)
           (y >= stack->s_y) && (y <= (stack->s_y + CARD_HEIGHT)))
       {
         Serial.println("found complete stack");
+	if (stack->stack.size() > 0)
+	{
+          Card * card = &stack->stack[stack->stack.size()-1];
+	  if (s_card == NULL)
+	  {  
+            s_card = card;
+	    s_stack = stack;
+	    card->c_selected = true;
+	    card->draw();
+	  }
+	  else if ((card->c_value == s_card->c_value) && (card->c_suit == s_card->c_suit))
+	  {
+            s_stack->redraw_stack();
+	    s_card = NULL;
+	    s_stack = NULL;
+	    card->c_selected = false;
+	    card->draw();
+	  }
+	}
         return stack;
       }
   }

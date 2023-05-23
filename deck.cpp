@@ -20,6 +20,7 @@ class Deck {
     Deck();
     bool deck_turn(int cards);
     bool init();
+    bool check_win();
     void check_click(int x,int y);
   private:
     std::vector<Card> deck{};
@@ -358,6 +359,17 @@ bool Deck::redraw_turn()
   for (int c=0; c < turn.size(); ++c){
     Card card = turn[c];
     card.draw();
+  }
+  return true;
+}
+
+bool Deck::check_win()
+{
+  if (deck.size() > 0){return false;}
+  else if (turn.size() > 0){return false;}
+  for (int s = 0; s < 7; ++s)
+  {
+    if (in_play[s].stack.size() > 0){return false;}
   }
   return true;
 }

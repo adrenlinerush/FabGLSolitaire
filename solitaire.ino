@@ -49,6 +49,13 @@ void loop()
     ESP.restart();
   }
   // check if won here...
+  bool won = deck.check_win();
+  if (won)
+  {
+    canvas.selectFont(&fabgl::FONT_8x8);
+    canvas.setPenColor(COLOR_WHITE);
+    canvas.drawText(250,150,"YOU WON!!!!");
+  }
   //delay(1000);
 }
 

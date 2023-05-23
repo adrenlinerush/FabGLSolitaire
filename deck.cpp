@@ -142,12 +142,15 @@ Stack * Deck::check_stack_click(int x, int y)
     }
   }
   //complete stacks
-  for (int s = 0; s < 3; ++s)
+  for (int s = 0; s < 4; ++s)
   {
+    Serial.println("Checking stack..");
+    Serial.println(s);
     Stack * stack = &complete[s];
       if ((x >= stack->s_x) && (x <= (stack->s_x + CARD_WIDTH)) &&
           (y >= stack->s_y) && (y <= (stack->s_y + CARD_HEIGHT)))
       {
+        Serial.println("found complete stack");
         return stack;
       }
   }

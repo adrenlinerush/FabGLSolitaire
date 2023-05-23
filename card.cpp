@@ -31,9 +31,9 @@ class Card {
     bool draw();
     int c_suit;
     int c_value;
-  private:
     int c_x;
     int c_y;
+  private:
     bool erase();
     std::__cxx11::string getText();
     bool setColors();

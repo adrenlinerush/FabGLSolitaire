@@ -13,6 +13,7 @@
 #define STACK_Y      60
 #define COMPLETE_X   200
 #define COMPLETE_Y   5
+#define CARDS_TO_TURN 3
 
 class Deck {
   public:
@@ -32,13 +33,151 @@ class Deck {
     bool redraw_turn();
     bool reset_deck();
     bool reset_turn();
+    bool stack_move(Stack * target_stack);
     Card pop();
     Card next();
+    Card * s_card;
+    Stack * s_stack;
+    Stack * check_stack_click(int x, int y);
 };
 
 void Deck::check_click(int x,int y)
 {
-  this->deck_turn(3);
+  if ((x >= DECK_X) && (x <= (DECK_X + CARD_WIDTH)) &&
+      (y >= DECK_Y) && (y <= (DECK_Y + CARD_HEIGHT)))
+  {
+    this->deck_turn(CARDS_TO_TURN);
+    if ((s_card) && (s_stack == NULL))
+    {
+      s_card->c_selected = false;
+      s_card = NULL;
+    }
+    return;
+  }
+  if (turn.size() > 0)
+  {
+    Card * turn_card = &turn.back();
+    if ((x >= turn_card->c_x) && (x <= (turn_card->c_x + CARD_WIDTH)) &&
+        (y >= turn_card->c_y) && (y <= (turn_card->c_y + CARD_HEIGHT)))
+    {
+      if (s_card == NULL) {
+        turn_card->c_selected = true;
+        turn_card->draw();
+        s_card = turn_card;
+        s_stack = NULL;
+	return;
+      }
+      else
+      {
+        if ((turn_card->c_value == s_card->c_value) && (turn_card->c_suit == s_card->c_suit)) 
+	{
+	  turn_card->c_selected = false;
+	  turn_card->draw();
+	  s_card = NULL;
+	  s_stack = NULL;
+	  return;
+	}
+      }
+    }
+  }
+  Stack * click_stack = this->check_stack_click(x,y);
+  if (s_card && click_stack)
+  {
+    Serial.println("going to attempt a move");
+    this->stack_move(click_stack);
+  }
+}
+
+Stack * Deck::check_stack_click(int x, int y)
+{
+  //in_play stacks
+  for (int s = 0; s < 7; ++s)
+  {
+    Stack * stack = &in_play[s];
+    if (stack->stack.size() == 0) 
+    {
+      if ((x >= stack->s_x) && (x <= (stack->s_x + CARD_WIDTH)) &&
+          (y >= stack->s_y) && (y <= (stack->s_y + CARD_HEIGHT)))
+      {
+        return stack;
+      }
+    }
+    Serial.println("looping through stack");
+    Serial.println(s);
+    for (int c = 0; c < stack->stack.size(); ++c)
+    {
+      Serial.println("*** Card ***");
+      Card * card = &stack->stack[c];
+      if (card->c_visible)
+      {
+        Serial.println("visible");
+	Serial.println(card->c_x);
+	Serial.println(card->c_y);
+        if ((x >= card->c_x) && (x <= (card->c_x + CARD_WIDTH)) &&
+            (y >= card->c_y) && (y <= (card->c_y + CARD_HEIGHT)))
+        {
+	  Serial.println("matches location");
+	  Serial.println(card->c_value);
+	  Serial.println(card->c_suit);
+	  if (s_card == NULL) 
+	  {
+	    Serial.println("selecting card");
+	    s_card = card;
+	    s_stack = stack;
+	    card->c_selected = true;
+	    card->draw();
+	  }
+          else if ((card->c_value == s_card->c_value) && (card->c_suit == s_card->c_suit)) 
+	  {
+	    Serial.println("unselecting card");
+            s_stack->redraw_stack();
+	    s_card = NULL;
+	    s_stack = NULL;
+	    card->c_selected = false;
+	    card->draw();
+	  }
+	  return stack;
+	}
+      }
+    }
+  }
+  //complete stacks
+  for (int s = 0; s < 3; ++s)
+  {
+    Stack * stack = &complete[s];
+      if ((x >= stack->s_x) && (x <= (stack->s_x + CARD_WIDTH)) &&
+          (y >= stack->s_y) && (y <= (stack->s_y + CARD_HEIGHT)))
+      {
+        return stack;
+      }
+  }
+  return NULL;
+}
+
+bool Deck::stack_move(Stack * target_stack)
+{
+  bool add_card = target_stack->add_card(s_card);
+  if (add_card)
+  {
+    if (s_stack) 
+    {
+      Serial.println("Card successfully added to new stack... cleanup started");
+      s_stack->rm_card(s_card);
+      s_stack->flip_card();
+      s_stack->redraw_stack();
+      s_stack = NULL;
+      s_card = NULL;
+    }
+    else
+    {
+      Serial.println("Cleanup turn...");
+      turn.pop_back();
+      this->redraw_turn();
+      s_stack = NULL;
+      s_card = NULL;
+    }
+  }
+  return add_card;
 }
 
 Deck::Deck()
@@ -94,6 +233,8 @@ bool Deck::deal()
     stack->flip_card();
     stack->redraw_stack();
   }
+  Card card = deck.front();
+  card.draw();
   return true;
 }
 
@@ -155,9 +296,9 @@ bool Deck::deck_turn(int cards)
     if (deck.size() > 0)
     {
       Card card = deck.front();
-      turn.push_back(card);
       card.c_visible = true;
       card.move(TURN_X+(TURN_OFFSET*(c-1)),TURN_Y);
+      turn.push_back(card);
       deck.erase(deck.begin());
     }
   }
@@ -184,8 +325,8 @@ bool Deck::reset_deck()
 bool Deck::reset_turn()
 {
   for (int c=0; c < turn.size(); ++c){
-    Card card = turn[c];
-    card.move(TURN_X,TURN_Y);
+    Card * card = &turn[c];
+    card->move(TURN_X,TURN_Y);
   }
   return true;
 }

@@ -42,7 +42,7 @@ void loop()
   canvas.fillRectangle(450,75,600,85);
   canvas.drawTextFmt(450, 75, " %d %d ", status.X, status.Y);
   if (status.buttons.left) {
-    canvas.drawText(450,100,"Left Click");
+    //canvas.drawText(450,100,"Left Click");
     deck.check_click(status.X, status.Y);
   }
   else if (status.buttons.right) {

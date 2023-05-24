@@ -35,8 +35,6 @@ class Deck {
     bool reset_deck();
     bool reset_turn();
     bool stack_move(Stack * target_stack);
-    Card pop();
-    Card next();
     Card * s_card;
     Stack * s_stack;
     Stack * check_stack_click(int x, int y);
@@ -44,6 +42,12 @@ class Deck {
 
 void Deck::check_click(int x,int y)
 {
+  Stack * click_stack = this->check_stack_click(x,y);
+  if (s_card && click_stack && (click_stack != s_stack))
+  {
+    Serial.println("going to attempt a move");
+    this->stack_move(click_stack);
+  }
   if ((x >= DECK_X) && (x <= (DECK_X + CARD_WIDTH)) &&
       (y >= DECK_Y) && (y <= (DECK_Y + CARD_HEIGHT)))
   {
@@ -80,12 +84,6 @@ void Deck::check_click(int x,int y)
 	}
       }
     }
-  }
-  Stack * click_stack = this->check_stack_click(x,y);
-  if (s_card && click_stack)
-  {
-    Serial.println("going to attempt a move");
-    this->stack_move(click_stack);
   }
 }
 
@@ -179,28 +177,55 @@ Stack * Deck::check_stack_click(int x, int y)
 
 bool Deck::stack_move(Stack * target_stack)
 {
-  bool add_card = target_stack->add_card(s_card);
-  if (add_card)
+  Serial.println("in stack_move");
+  if (s_stack == NULL) 
   {
-    if (s_stack) 
-    {
-      Serial.println("Card successfully added to new stack... cleanup started");
-      s_stack->rm_card(s_card);
-      s_stack->flip_card();
-      s_stack->redraw_stack();
-      s_stack = NULL;
-      s_card = NULL;
-    }
-    else
-    {
+    Serial.println("No s_stack... assuming deck");
+    bool add_card = target_stack->add_card(s_card);
+    if (add_card) {
       Serial.println("Cleanup turn...");
       turn.pop_back();
       this->redraw_turn();
       s_stack = NULL;
       s_card = NULL;
-    }
+    } else { return false; }
   }
-  return add_card;
+  else
+  {
+    //Serial.println('Move stack...');
+    int i_move = false;
+    for (int c = 0; c < s_stack->stack.size(); ++c)
+    {
+      Serial.println(c);
+      if (i_move == false) 
+      {
+        Serial.println("no match yet");
+        Card * card = &s_stack->stack[c];
+        if (card == s_card){Serial.println("match"); i_move = true;}
+      }
+      if (i_move)
+      {
+        do {
+          Serial.println("Moving card...");
+          Card * card = &s_stack->stack[c];
+          Serial.println(card->c_value);
+          bool add_card = target_stack->add_card(card);
+          if (add_card)
+          {
+            Serial.println("Card successfully added to new stack... cleanup started");
+            s_stack->rm_card(card);
+          } else { Serial.println("error moving card"); return false; }
+	} while ( s_stack->stack.size() > c);
+	break;
+      }
+    }
+    s_stack->flip_card();
+    s_stack->redraw_stack();
+    s_stack = NULL;
+    s_card = NULL;
+  }
+  Serial.println("Move and cleanup completed...");
+  return true;
 }
 
 Deck::Deck()
@@ -291,21 +316,6 @@ bool Deck::init_deck()
     Serial.println(suit);
   }
   return true;
-}
-
-Card Deck::pop()
-{
-  Card card = turn.back();
-  turn.pop_back();
-  this->redraw_turn();
-  return card;
-}
-
-
-Card Deck::next()
-{
-  Card card = turn.back();
-  return card;
 }
 
 bool Deck::deck_turn(int cards)

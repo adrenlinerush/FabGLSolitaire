@@ -2,7 +2,7 @@
 
 ## Status
 
-Mostly working, the deck turn gets wonky sometimes. Overall playable.
+I think I have all the bugs worked out.
 
 ## Installation/Flashing ESP32 VGA TTGO
 

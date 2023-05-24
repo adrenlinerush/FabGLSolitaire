@@ -340,6 +340,7 @@ bool Deck::deck_turn(int cards)
     Card card = deck.front();
     card.draw();
   }
+  this->redraw_turn();
   return true;
 }
 
